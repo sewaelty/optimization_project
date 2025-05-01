@@ -5,12 +5,14 @@ This project uses Gurobi and Python to solve an optimization problem.
 ## Setup
 
 1. Create and activate a virtual environment:
+
    ```bash
    python -m venv venv
-   source venv/bin/activate  # on Windows: venv\Scripts\activate
+   source venv\Scripts\activate  # on Windows: venv/bin/activate
    ```
 
 2. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
