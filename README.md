@@ -8,7 +8,7 @@ This project uses Gurobi and Python to solve an optimization problem.
 
    ```bash
    python -m venv venv
-   source venv\Scripts\activate  # on Windows: venv/bin/activate
+   source venv\Scripts\activate  # on Mac: venv/bin/activate
    ```
 
 2. Install dependencies:
