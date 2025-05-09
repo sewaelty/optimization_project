@@ -1,0 +1,24 @@
+TV consumption data estimated with ChatGPT and based on the following assumptions: 
+Weekdays: TV watched between 7–10 PM,
+Champions League (Tue/Wed): 8–11 PM, increased consumption,
+Daily news broadcast: every day at 8 PM,
+Weekends: longer evening use, possible sports at midday,
+December: morning TV (7–8 AM), ski races (12–1 PM)
+
+
+Lighting consumption data estimated with ChatGPT and based on the following assumptions:
+
+Lighting: 10 LED lamps at 10 W each → 0.1 kWh per hour when active
+Winter months (e.g. December):
+Evening usage (5–11 PM): probability ~80%,
+Morning usage (6–8 AM): ~40%,
+Daytime usage on weekends: ~20%,
+Summer months (e.g. August):
+Usage mostly in late evenings (9–11 PM): ~50%,
+Less morning usage,
+Weekdays: reduced daytime probability (~20% of base) as people are often not at home.
+
+
+Fridge consumption:
+
+Data for a fridge based on the profile from https://app.data-archive.ethz.ch/delivery/DeliveryManagerServlet?dps_pid=IE594964 and then aggregated to hourly values for the months december and August
