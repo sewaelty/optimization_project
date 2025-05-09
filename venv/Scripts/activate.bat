@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\Sevi\OneDrive - ETH Zurich\Master Energy Science and Technology\S2\Optimization in Energy Systems\Project\github_model\venv
+set VIRTUAL_ENV=C:\Users\Sevi\OneDrive - ETH Zurich\Master Energy Science and Technology\S2\Optimization in Energy Systems\Project\optimization_project\venv
 
 if not defined PROMPT set PROMPT=$P$G
 
