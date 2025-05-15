@@ -22,3 +22,7 @@ Weekdays: reduced daytime probability (~20% of base) as people are often not at 
 Fridge consumption:
 
 Data for a fridge based on the profile from https://app.data-archive.ethz.ch/delivery/DeliveryManagerServlet?dps_pid=IE594964 and then aggregated to hourly values for the months december and August
+
+Heat Demand:
+
+https://data.sccer-jasm.ch/
