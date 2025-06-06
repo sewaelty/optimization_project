@@ -3,7 +3,6 @@ def createDataframe(season):
     Args:
         season (str): The season for which to return the database.
     """
-
     ### imports
 
     import os
@@ -33,91 +32,29 @@ def createDataframe(season):
     # Spotmarket data from: https://energy-charts.info/charts/price_spot_market/chart.htm?l=en&c=CH&interval=month&year=2024&legendItems=by4&month=12
 
     ### Load fixed appliances
+    appliances_winter = pd.read_csv(os.path.join(data_dir, 'DeviceProfiles_3600s.Electricity_december.csv'), sep=';')
 
-    # TV consumption data for summer month
-    tv_summer = pd.read_csv(
-        os.path.join(data_dir, "tv_consumption_august_2024_detailed.csv"), sep=","
-    )
+    fixed_appliances_winter = appliances_winter.drop(['Electricity.Timestep','HH1 - Kitchen - Dishwasher NEFF SD6P1F (2011) [kWh]',
+        'HH1 - Kitchen - Dryer / Miele T 8626 WP [kWh]',
+        'HH1 - Kitchen - Washing Machine AEG Öko Plus 1400 [kWh]',],axis=1)
 
-    # TV consumption data for winter month
-    tv_winter = pd.read_csv(
-        os.path.join(data_dir, "tv_consumption_december_2024_detailed.csv"), sep=","
-    )
-
-    # Lighting consumption data for summer month
-    lighting_summer = pd.read_csv(
-        os.path.join(data_dir, "lighting_consumption_august_2024.csv"), sep=","
+    fixed_appliances_winter.columns = fixed_appliances_winter.columns.str.replace('Time', 'timestamp')
+    fixed_appliances_winter["timestamp"] = pd.to_datetime(
+        fixed_appliances_winter["timestamp"], dayfirst=True
     )
 
-    # Lighting consumption data for winter month
-    lighting_winter = pd.read_csv(
-        os.path.join(data_dir, "lighting_consumption_december_2024.csv"), sep=","
-    )
+    ### loading summer appliance data
 
-    # Fridge consumption data for summer month
-    fridge_summer = pd.read_csv(
-        os.path.join(data_dir, "fridge_August_Final_Adjusted.csv"), sep=","
-    )
+    appliances_summer = pd.read_csv(os.path.join(data_dir, 'DeviceProfiles_3600s.Electricity_august.csv'), sep=';')
 
-    # Fridge consumption data for winter month
-    fridge_winter = pd.read_csv(
-        os.path.join(data_dir, "fridge_December_Final_Adjusted.csv"), sep=","
-    )
+    fixed_appliances_summer = appliances_summer.drop(['Electricity.Timestep','HH1 - Kitchen - Dishwasher NEFF SD6P1F (2011) [kWh]',
+        'HH1 - Kitchen - Dryer / Miele T 8626 WP [kWh]',
+        'HH1 - Kitchen - Washing Machine AEG Öko Plus 1400 [kWh]',],axis=1)
 
-    # Oven consumption data for summer month
-    oven_summer = pd.read_csv(
-        os.path.join(data_dir, "Oven_Energy_Consumption_August_Final.csv"), sep=","
-    )
+    fixed_appliances_summer.columns = fixed_appliances_summer.columns.str.replace('Time', 'timestamp')
 
-    # Oven consumption data for winter month
-    oven_winter = pd.read_csv(
-        os.path.join(data_dir, "Oven_Energy_Consumption_December_Final.csv"), sep=","
-    )
-
-    # Induction stove consumption data for summer month
-    induction_summer = pd.read_csv(
-        os.path.join(data_dir, "Induction_Stove_Energy_Consumption_August_Final.csv"),
-        sep=",",
-    )
-
-    # Induction stove consumption data for winter month
-    induction_winter = pd.read_csv(
-        os.path.join(data_dir, "Induction_Stove_Energy_Consumption_December_Final.csv"),
-        sep=",",
-    )
-
-    # adjust names of columns for summer
-    tv_summer.columns = tv_summer.columns.str.replace(
-        "tv_power_kWh", "TV_Consumption_(kWh)"
-    )
-    lighting_summer.columns = lighting_summer.columns.str.replace(
-        "lighting_power_kWh", "Lighting_Consumption_(kWh)"
-    )
-    fridge_summer.columns = fridge_summer.columns.str.replace(
-        "consumption_kWh", "Fridges_Consumption_(kWh)"
-    )
-    oven_summer.columns = oven_summer.columns.str.replace(
-        "consumption_kWh", "Oven_Consumption_(kWh)"
-    )
-    induction_summer.columns = induction_summer.columns.str.replace(
-        "consumption_kWh", "Induction_Stove_Consumption_(kWh)"
-    )
-
-    # adjust names of columns for winter
-    tv_winter.columns = tv_winter.columns.str.replace(
-        "tv_power_kWh", "TV_Consumption_(kWh)"
-    )
-    lighting_winter.columns = lighting_winter.columns.str.replace(
-        "lighting_power_kWh", "Lighting_Consumption_(kWh)"
-    )
-    fridge_winter.columns = fridge_winter.columns.str.replace(
-        "consumption_kWh", "Fridges_Consumption_(kWh)"
-    )
-    oven_winter.columns = oven_winter.columns.str.replace(
-        "consumption_kWh", "Oven_Consumption_(kWh)"
-    )
-    induction_winter.columns = induction_winter.columns.str.replace(
-        "consumption_kWh", "Induction_Stove_Consumption_(kWh)"
+    fixed_appliances_summer["timestamp"] = pd.to_datetime(
+        fixed_appliances_summer["timestamp"], dayfirst=True
     )
 
     ### Load PV data
@@ -142,103 +79,30 @@ def createDataframe(season):
 
     # Ensure all timestamp columns are of the same type for summer
     p_summer["timestamp"] = pd.to_datetime(p_summer["timestamp"])
-    lighting_summer["timestamp"] = pd.to_datetime(lighting_summer["timestamp"])
-    fridge_summer["timestamp"] = pd.to_datetime(fridge_summer["timestamp"])
-    oven_summer["timestamp"] = pd.to_datetime(oven_summer["timestamp"])
-    induction_summer["timestamp"] = pd.to_datetime(induction_summer["timestamp"])
-    tv_summer["timestamp"] = pd.to_datetime(tv_summer["timestamp"])
+    
     pv_summer["timestamp"] = pd.to_datetime(
         pv_summer["timestamp"].copy(), format="%Y-%m-%d %H:%M:%S"
     )  # -> already done in the previous step
 
     # Ensure all timestamp columns are of the same type for winter
     p_winter["timestamp"] = pd.to_datetime(p_winter["timestamp"])
-    lighting_winter["timestamp"] = pd.to_datetime(lighting_winter["timestamp"])
-    fridge_winter["timestamp"] = pd.to_datetime(fridge_winter["timestamp"])
-    oven_winter["timestamp"] = pd.to_datetime(oven_winter["timestamp"])
-    induction_winter["timestamp"] = pd.to_datetime(induction_winter["timestamp"])
-    tv_winter["timestamp"] = pd.to_datetime(tv_winter["timestamp"])
+    
     pv_winter["timestamp"] = pd.to_datetime(
         pv_winter["timestamp"].copy(), format="%Y-%m-%d %H:%M:%S"
     )  # -> already done in the previous step
 
-    # change year from 2024 to 2023 for summer data in timestamp
-    tv_summer["timestamp"] = tv_summer["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-    lighting_summer["timestamp"] = lighting_summer["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-    fridge_summer["timestamp"] = fridge_summer["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-    oven_summer["timestamp"] = oven_summer["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-    induction_summer["timestamp"] = induction_summer["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-
-    # change year from 2024 to 2023 for winter data
-    tv_winter["timestamp"] = tv_winter["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-    lighting_winter["timestamp"] = lighting_winter["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-    fridge_winter["timestamp"] = fridge_winter["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-    oven_winter["timestamp"] = oven_winter["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-    induction_winter["timestamp"] = induction_winter["timestamp"].apply(
-        lambda x: x.replace(year=2023)
-    )
-
-    # shorten the dataset to 4 weeks (4 weeks * 7 days * 24 hours = 672 rows) for summer
-    lighting_summer = lighting_summer.iloc[: 4 * 7 * 24]
-    fridge_summer = fridge_summer.iloc[: 4 * 7 * 24]
-    oven_summer = oven_summer.iloc[: 4 * 7 * 24]
-    induction_summer = induction_summer.iloc[: 4 * 7 * 24]
-    tv_summer = tv_summer.iloc[: 4 * 7 * 24]
-    p_summer = p_summer.iloc[: 4 * 7 * 24]
-    pv_summer = pv_summer.iloc[: 4 * 7 * 24]
-
-    # shorten the dataset to 4 weeks (4 weeks * 7 days * 24 hours = 672 rows) for winter
-    lighting_winter = lighting_winter.iloc[: 4 * 7 * 24]
-    fridge_winter = fridge_winter.iloc[: 4 * 7 * 24]
-    oven_winter = oven_winter.iloc[: 4 * 7 * 24]
-    induction_winter = induction_winter.iloc[: 4 * 7 * 24]
-    tv_winter = tv_winter.iloc[: 4 * 7 * 24]
-    p_winter = p_winter.iloc[: 4 * 7 * 24]
-    pv_winter = pv_winter.iloc[: 4 * 7 * 24]
-
-    # Adjust the timestamp for fridge
-    fridge_summer["timestamp"] = fridge_summer["timestamp"] - pd.Timedelta(hours=1)
-    fridge_winter["timestamp"] = fridge_winter["timestamp"] - pd.Timedelta(hours=1)
-
-    # Sum up inflexible demand: lighting, tv, fridge, oven, induction stove
+    # Sum up inflexible demand
     inflexible_demand_summer = pd.DataFrame()
-    inflexible_demand_summer["timestamp"] = lighting_summer["timestamp"]
-    inflexible_demand_summer["Inflexible_Demand_(kWh)"] = (
-        lighting_summer["Lighting_Consumption_(kWh)"]
-        + tv_summer["TV_Consumption_(kWh)"]
-        + fridge_summer["Fridges_Consumption_(kWh)"]
-        + oven_summer["Oven_Consumption_(kWh)"]
-        + induction_summer["Induction_Stove_Consumption_(kWh)"]
-    )
+    inflexible_demand_summer["timestamp"] = fixed_appliances_summer["timestamp"]
+    inflexible_demand_summer["Inflexible_Demand_(kWh)"] = fixed_appliances_summer.sum(
+        axis=1, numeric_only=True)
 
     inflexible_demand_winter = pd.DataFrame()
-    inflexible_demand_winter["timestamp"] = lighting_winter["timestamp"]
-    inflexible_demand_winter["Inflexible_Demand_(kWh)"] = (
-        lighting_winter["Lighting_Consumption_(kWh)"]
-        + tv_winter["TV_Consumption_(kWh)"]
-        + fridge_winter["Fridges_Consumption_(kWh)"]
-        + oven_winter["Oven_Consumption_(kWh)"]
-        + induction_winter["Induction_Stove_Consumption_(kWh)"]
-    )
+    inflexible_demand_winter["timestamp"] = fixed_appliances_winter["timestamp"]
+    inflexible_demand_winter["Inflexible_Demand_(kWh)"] = fixed_appliances_winter.sum(
+        axis=1, numeric_only=True)
     
+
     ev_data_summer = pd.read_csv(os.path.join(data_dir, "ev_data_hourly_5weeks_summer_2023.csv"), sep=",")
     ev_data_winter = pd.read_csv(os.path.join(data_dir, "ev_data_hourly_5weeks_winter_2023.csv"), sep=",")
     # Ensure all timestamp columns are of the same type for summer
@@ -247,10 +111,11 @@ def createDataframe(season):
     #drop column datetime from ev_data_summer and ev_data_winter
     ev_data_summer.drop(columns=["datetime"], inplace=True)
     ev_data_winter.drop(columns=["datetime"], inplace=True)
-    #shorten both datasets to 4 weeks (4 weeks * 7 days * 24 hours = 672 rows)
-    
-    ev_data_summer = ev_data_summer.iloc[: 4 * 7 * 24]
-    ev_data_winter = ev_data_winter.iloc[: 4 * 7 * 24]
+
+
+    #shorten both datasets to exactly respective month (august or december)
+    ev_data_summer = ev_data_summer.iloc[: 31 * 24]
+    ev_data_winter = ev_data_winter.iloc[: 31 * 24]
     
     # Merge all datasets on the 'timestamp' column for summer
     merged_data_summer = p_summer.merge(
@@ -273,9 +138,12 @@ def createDataframe(season):
     merged_data_summer = merged_data_summer.merge(
         ev_data_summer, left_on="timestamp", right_on="timestamp", how="inner"
     )
+    #merged_data_summer = merged_data_summer.iloc[: 7 * 4 * 24]  # only keep the first 7 days of data
+    
     merged_data_winter = merged_data_winter.merge(
         ev_data_winter, left_on="timestamp", right_on="timestamp", how="inner"
     )
+    #merged_data_winter = merged_data_winter.iloc[: 7 * 4 * 24]  # only keep the first 7 days of data
 
     # return the desired datamframe
     if season == "summer":
