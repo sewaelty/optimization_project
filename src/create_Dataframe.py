@@ -238,7 +238,20 @@ def createDataframe(season):
         + oven_winter["Oven_Consumption_(kWh)"]
         + induction_winter["Induction_Stove_Consumption_(kWh)"]
     )
-
+    
+    ev_data_summer = pd.read_csv(os.path.join(data_dir, "ev_data_hourly_5weeks_summer_2023.csv"), sep=",")
+    ev_data_winter = pd.read_csv(os.path.join(data_dir, "ev_data_hourly_5weeks_winter_2023.csv"), sep=",")
+    # Ensure all timestamp columns are of the same type for summer
+    ev_data_summer["timestamp"] = pd.to_datetime(ev_data_summer["datetime"])
+    ev_data_winter["timestamp"] = pd.to_datetime(ev_data_winter["datetime"])
+    #drop column datetime from ev_data_summer and ev_data_winter
+    ev_data_summer.drop(columns=["datetime"], inplace=True)
+    ev_data_winter.drop(columns=["datetime"], inplace=True)
+    #shorten both datasets to 4 weeks (4 weeks * 7 days * 24 hours = 672 rows)
+    
+    ev_data_summer = ev_data_summer.iloc[: 4 * 7 * 24]
+    ev_data_winter = ev_data_winter.iloc[: 4 * 7 * 24]
+    
     # Merge all datasets on the 'timestamp' column for summer
     merged_data_summer = p_summer.merge(
         inflexible_demand_summer, left_on="timestamp", right_on="timestamp", how="inner"
@@ -255,10 +268,18 @@ def createDataframe(season):
     merged_data_winter["Heating_Demand_(kWh)"] = heat_demand_winter[
         "Hot water + Space Heating demand [kWh]"
     ]
+    
+    #merge ev data to merged_data_summer and merged_data_winter
+    merged_data_summer = merged_data_summer.merge(
+        ev_data_summer, left_on="timestamp", right_on="timestamp", how="inner"
+    )
+    merged_data_winter = merged_data_winter.merge(
+        ev_data_winter, left_on="timestamp", right_on="timestamp", how="inner"
+    )
 
     # return the desired datamframe
     if season == "summer":
-        return merged_data_summer
+        return  merged_data_summer
     elif season == "winter":
         return merged_data_winter
     else:
