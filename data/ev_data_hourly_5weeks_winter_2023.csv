@@ -1,4 +1,4 @@
-Datetime,EV_at_home_hourly,Distance Driven,EV_charging_capacity,Weekday
+datetime,ev_at_home_binary,distance_driven,ev_home_availability,weekday
 2023-11-27 00:00:00,1,0.0,1.0,0
 2023-11-27 01:00:00,1,0.0,1.0,0
 2023-11-27 02:00:00,1,0.0,1.0,0
