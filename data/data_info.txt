@@ -1,27 +1,74 @@
-TV consumption data estimated with ChatGPT and based on the following assumptions: 
-Weekdays: TV watched between 7–10 PM,
-Champions League (Tue/Wed): 8–11 PM, increased consumption,
-Daily news broadcast: every day at 8 PM,
-Weekends: longer evening use, possible sports at midday,
-December: morning TV (7–8 AM), ski races (12–1 PM)
+Inflexible Demand:
 
+https://www.loadprofilegenerator.de/
 
-Lighting consumption data estimated with ChatGPT and based on the following assumptions:
+Properties of simulated house:
+Temperature profile from dresden Germany -> simulated geographic location is in Stuttgard --> should be similar to Swiss Midlands
+Energy Saving conditions: total electricity demand of around 2600 kwh per year (extrapolated from simulated month in december and august)
+Simulated Household: Family with 2 Children and both parents at work.
 
-Lighting: 10 LED lamps at 10 W each → 0.1 kWh per hour when active
-Winter months (e.g. December):
-Evening usage (5–11 PM): probability ~80%,
-Morning usage (6–8 AM): ~40%,
-Daytime usage on weekends: ~20%,
-Summer months (e.g. August):
-Usage mostly in late evenings (9–11 PM): ~50%,
-Less morning usage,
-Weekdays: reduced daytime probability (~20% of base) as people are often not at home.
+Flexible appliances (Washing Machine, Dryer, Dishwasher) were manually excluded from the data, to be simulated in the optimization.
 
+Devices Included:
 
-Fridge consumption:
+       'HH1 - Living room - Living Room Light (Energy Saving Lamp, 20W) [kWh]',
+       'HH1 - Kitchen - Kitchen Light (20W) [kWh]',
+       'HH1 - Bath - Bathroom Light (20W) [kWh]',
+       'HH1 - Bath - Bathroom Mirror Light 10 W (LED) [kWh]',
+       'HH1 - Bedroom - Bedroom Light (20W) [kWh]',
+       'HH1 - Children's room 2 - Children Room Light Device (20W) [kWh]',
+       'HH1 - Children's room - Children Room Light Device (20W) [kWh]',
+       'HH1 - Kitchen - Egg Cooker / Russell Hobbs 14048-56 Stylo [kWh]',
+       'HH1 - Kitchen - Juicer / Moulinex Vitafruit [kWh]',
+       'HH1 - Kitchen - Kitchen radio / AEG KRC 4323 CD [kWh]',
+       'HH1 - Kitchen - Single Stove Plate [kWh]',
+       'HH1 - Kitchen - Nespresso Coffee Machine, Single Cup [kWh]',
+       'HH1 - Kitchen - Food Slicer / DOMO Schneidemaschine DO521S [kWh]',
+       'HH1 - Kitchen - Toaster Salco MT 400 [kWh]',
+       'HH1 - Kitchen - Miele DG 1450 [kWh]',
+       'HH1 - Kitchen - Handmixer / Phillips Robust HR 1581 [kWh]',
+       'HH1 - Kitchen - Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front right- full power [kWh]',
+       'HH1 - Kitchen - Microwave Panasonic (1991) [kWh]',
+       'HH1 - Kitchen - Extractor Hood / Miele DA 429-4 [kWh]',
+       'HH1 - Kitchen - Miele DA 61 [kWh]',
+       'HH1 - Kitchen - Deep Fryer / DeLonghi F 28311.W Rotofritteuse [kWh]',
+       'HH1 - Kitchen - Ricecooker / Tristar RK-6112 [kWh]',
+       'HH1 - Kitchen - Steam Cooker / Phillips HD9140 [kWh]',
+       'HH1 - Kitchen - Kitchen Stove / Bauknecht Heko 750 PT Kitchen-stove right hind [kWh]',
+       'HH1 - Kitchen - Immersion Blender Noah Hit Top [kWh]',
+       'HH1 - Kitchen - Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove left hind - full power [kWh]',
+       'HH1 - Kitchen - Fondue / Unold 48746 Asia [kWh]',
+       'HH1 - Living room - Laptop Sony Vaio SVE151G11M [kWh]',
+       'HH1 - Living room - CD/DVD Player / Philips DVDR 725 H [kWh]',
+       'HH1 - Living room - Home Cinema System / Samsung HT-D5550 [kWh]',
+       'HH1 - Living room - TV Medion MD20123_DE_A [kWh]',
+       'HH1 - Living room - SAT Receiver / Kathrein UFS913 [kWh]',
+       'HH1 - Living room - Digitalpiano / Kawai CN-23 [kWh]',
+       'HH1 - Living room - Hifi System / Sharp XL-HF300PH [kWh]',
+       'HH1 - Kitchen - Electric Kettle / Petra WK288 1.5L [kWh]',
+       'HH1 - Living room - Energy Saving Lamp / EL-REF 11 E27 [kWh]',
+       'HH1 - Kitchen - Vacuum Cleaner FiF [kWh]',
+       'HH1 - Living room - Nintendo Wii [kWh]',
+       'HH1 - Bath - Hair Dryer Braun Silencio 1250 [kWh]',
+       'HH1 - Kitchen - Siemens Kl 20 LA 65 (A+) [kWh]',
+       'HH1 - Kitchen - Kitchen radio / AEG KRC 4323 CD [kWh].1',
+       'HH1 - Kitchen - Freezer Liebherr Premium no Frost 2358 (2011) [kWh]',
+       'HH1 - Kitchen - Microwave Panasonic (1991) [kWh].1',
+       'HH1 - Living room - Laptop Sony Vaio SVE151G11M [kWh].1',
+       'HH1 - Bath - Electric Razor Braun Cruzer 5 [kWh]',
+       'HH1 - Bath - Electric Toothbrush Dondodent Professional Clean [kWh]',
+       'HH1 - Living room - Phone Siemens Gigaset C320 [kWh]',
+       'HH1 - Living room - Router O2 Box 6431 [kWh]',
+       'HH1 - Living room - CD/DVD Player / Philips DVDR 725 H [kWh].1',
+       'HH1 - Living room - Home Cinema System / Samsung HT-D5550 [kWh].1',
+       'HH1 - Living room - SAT Receiver / Kathrein UFS913 [kWh].1',
+       'HH1 - Living room - TV Medion MD20123_DE_A [kWh].1',
+       'HH1 - Living room - Hifi System / Sharp XL-HF300PH [kWh].1',
+       'HH1 - Living room - Yamaha RX-V667 [kWh]',
+       'HH1 - Living room - Nintendo Wii [kWh].1',
+       'House - Cellar - Circulation Pump / Grundfos Alpha Pro 25-40 180 [kWh]',
+       'House - Cellar - Circulation Pump / Grundfos Alpha Pro 25-40 180 [kWh].1'
 
-Data for a fridge based on the profile from https://app.data-archive.ethz.ch/delivery/DeliveryManagerServlet?dps_pid=IE594964 and then aggregated to hourly values for the months december and August
 
 Heat Demand:
 
