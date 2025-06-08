@@ -2,9 +2,11 @@ Inflexible Demand:
 
 https://www.loadprofilegenerator.de/
 
+Simulates Loadprofiles of common german households. Can be extrapolated to swiss conditions.
+
 Properties of simulated house:
 Temperature profile from dresden Germany -> simulated geographic location is in Stuttgard --> should be similar to Swiss Midlands
-Energy Saving conditions: total electricity demand of around 2600 kwh per year (extrapolated from simulated month in december and august)
+Energy Saving conditions: total electricity demand of around 2600 kwh per year (extrapolated from simulated month in december and august). The demand was simulated on the assumption of an energy saving household.
 Simulated Household: Family with 2 Children and both parents at work.
 
 Flexible appliances (Washing Machine, Dryer, Dishwasher) were manually excluded from the data, to be simulated in the optimization.
@@ -69,6 +71,8 @@ Devices Included:
        'House - Cellar - Circulation Pump / Grundfos Alpha Pro 25-40 180 [kWh]',
        'House - Cellar - Circulation Pump / Grundfos Alpha Pro 25-40 180 [kWh].1'
 
+HH1 --> devices used by the household (Here only one household in the house, but several would be possible in the software)
+House --> electricity used for the house in general (Here only circulation pump)
 
 Heat Demand:
 
