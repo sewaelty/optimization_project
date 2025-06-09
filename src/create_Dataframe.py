@@ -32,26 +32,46 @@ def createDataframe(season):
     # Spotmarket data from: https://energy-charts.info/charts/price_spot_market/chart.htm?l=en&c=CH&interval=month&year=2024&legendItems=by4&month=12
 
     ### Load fixed appliances
-    appliances_winter = pd.read_csv(os.path.join(data_dir, 'DeviceProfiles_3600s.Electricity_december.csv'), sep=';')
+    appliances_winter = pd.read_csv(
+        os.path.join(data_dir, "DeviceProfiles_3600s.Electricity_december.csv"), sep=";"
+    )
 
-    fixed_appliances_winter = appliances_winter.drop(['Electricity.Timestep','HH1 - Kitchen - Dishwasher NEFF SD6P1F (2011) [kWh]',
-        'HH1 - Kitchen - Dryer / Miele T 8626 WP [kWh]',
-        'HH1 - Kitchen - Washing Machine AEG Öko Plus 1400 [kWh]',],axis=1)
+    fixed_appliances_winter = appliances_winter.drop(
+        [
+            "Electricity.Timestep",
+            "HH1 - Kitchen - Dishwasher NEFF SD6P1F (2011) [kWh]",
+            "HH1 - Kitchen - Dryer / Miele T 8626 WP [kWh]",
+            "HH1 - Kitchen - Washing Machine AEG Öko Plus 1400 [kWh]",
+        ],
+        axis=1,
+    )
 
-    fixed_appliances_winter.columns = fixed_appliances_winter.columns.str.replace('Time', 'timestamp')
+    fixed_appliances_winter.columns = fixed_appliances_winter.columns.str.replace(
+        "Time", "timestamp"
+    )
     fixed_appliances_winter["timestamp"] = pd.to_datetime(
         fixed_appliances_winter["timestamp"], dayfirst=True
     )
 
     ### loading summer appliance data
 
-    appliances_summer = pd.read_csv(os.path.join(data_dir, 'DeviceProfiles_3600s.Electricity_august.csv'), sep=';')
+    appliances_summer = pd.read_csv(
+        os.path.join(data_dir, "DeviceProfiles_3600s.Electricity_august.csv"), sep=";"
+    )
 
-    fixed_appliances_summer = appliances_summer.drop(['Electricity.Timestep','HH1 - Kitchen - Dishwasher NEFF SD6P1F (2011) [kWh]',
-        'HH1 - Kitchen - Dryer / Miele T 8626 WP [kWh]',
-        'HH1 - Kitchen - Washing Machine AEG Öko Plus 1400 [kWh]',],axis=1)
+    fixed_appliances_summer = appliances_summer.drop(
+        [
+            "Electricity.Timestep",
+            "HH1 - Kitchen - Dishwasher NEFF SD6P1F (2011) [kWh]",
+            "HH1 - Kitchen - Dryer / Miele T 8626 WP [kWh]",
+            "HH1 - Kitchen - Washing Machine AEG Öko Plus 1400 [kWh]",
+        ],
+        axis=1,
+    )
 
-    fixed_appliances_summer.columns = fixed_appliances_summer.columns.str.replace('Time', 'timestamp')
+    fixed_appliances_summer.columns = fixed_appliances_summer.columns.str.replace(
+        "Time", "timestamp"
+    )
 
     fixed_appliances_summer["timestamp"] = pd.to_datetime(
         fixed_appliances_summer["timestamp"], dayfirst=True
@@ -79,14 +99,14 @@ def createDataframe(season):
 
     # Ensure all timestamp columns are of the same type for summer
     p_summer["timestamp"] = pd.to_datetime(p_summer["timestamp"])
-    
+
     pv_summer["timestamp"] = pd.to_datetime(
         pv_summer["timestamp"].copy(), format="%Y-%m-%d %H:%M:%S"
     )  # -> already done in the previous step
 
     # Ensure all timestamp columns are of the same type for winter
     p_winter["timestamp"] = pd.to_datetime(p_winter["timestamp"])
-    
+
     pv_winter["timestamp"] = pd.to_datetime(
         pv_winter["timestamp"].copy(), format="%Y-%m-%d %H:%M:%S"
     )  # -> already done in the previous step
@@ -95,28 +115,32 @@ def createDataframe(season):
     inflexible_demand_summer = pd.DataFrame()
     inflexible_demand_summer["timestamp"] = fixed_appliances_summer["timestamp"]
     inflexible_demand_summer["Inflexible_Demand_(kWh)"] = fixed_appliances_summer.sum(
-        axis=1, numeric_only=True)
+        axis=1, numeric_only=True
+    )
 
     inflexible_demand_winter = pd.DataFrame()
     inflexible_demand_winter["timestamp"] = fixed_appliances_winter["timestamp"]
     inflexible_demand_winter["Inflexible_Demand_(kWh)"] = fixed_appliances_winter.sum(
-        axis=1, numeric_only=True)
-    
+        axis=1, numeric_only=True
+    )
 
-    ev_data_summer = pd.read_csv(os.path.join(data_dir, "ev_data_hourly_5weeks_summer_2023.csv"), sep=",")
-    ev_data_winter = pd.read_csv(os.path.join(data_dir, "ev_data_hourly_5weeks_winter_2023.csv"), sep=",")
+    ev_data_summer = pd.read_csv(
+        os.path.join(data_dir, "ev_data_hourly_5weeks_summer_2023.csv"), sep=","
+    )
+    ev_data_winter = pd.read_csv(
+        os.path.join(data_dir, "ev_data_hourly_5weeks_winter_2023.csv"), sep=","
+    )
     # Ensure all timestamp columns are of the same type for summer
     ev_data_summer["timestamp"] = pd.to_datetime(ev_data_summer["datetime"])
     ev_data_winter["timestamp"] = pd.to_datetime(ev_data_winter["datetime"])
-    #drop column datetime from ev_data_summer and ev_data_winter
+    # drop column datetime from ev_data_summer and ev_data_winter
     ev_data_summer.drop(columns=["datetime"], inplace=True)
     ev_data_winter.drop(columns=["datetime"], inplace=True)
 
-
-    #shorten both datasets to exactly respective month (august or december)
+    # shorten both datasets to exactly respective month (august or december)
     ev_data_summer = ev_data_summer.iloc[: 31 * 24]
     ev_data_winter = ev_data_winter.iloc[: 31 * 24]
-    
+
     # Merge all datasets on the 'timestamp' column for summer
     merged_data_summer = p_summer.merge(
         inflexible_demand_summer, left_on="timestamp", right_on="timestamp", how="inner"
@@ -133,22 +157,22 @@ def createDataframe(season):
     merged_data_winter["Heating_Demand_(kWh)"] = heat_demand_winter[
         "Hot water + Space Heating demand [kWh]"
     ]
-    
-    #merge ev data to merged_data_summer and merged_data_winter
+
+    # merge ev data to merged_data_summer and merged_data_winter
     merged_data_summer = merged_data_summer.merge(
         ev_data_summer, left_on="timestamp", right_on="timestamp", how="inner"
     )
-    #merged_data_summer = merged_data_summer.iloc[: 7 * 4 * 24]  # only keep the first 7 days of data
-    
+    # merged_data_summer = merged_data_summer.iloc[: 7 * 4 * 24]  # only keep the first 7 days of data
+
     merged_data_winter = merged_data_winter.merge(
         ev_data_winter, left_on="timestamp", right_on="timestamp", how="inner"
     )
-    #merged_data_winter = merged_data_winter.iloc[: 7 * 4 * 24]  # only keep the first 7 days of data
+    # merged_data_winter = merged_data_winter.iloc[: 7 * 4 * 24]  # only keep the first 7 days of data
 
     # return the desired datamframe
     if season == "summer":
-        return  merged_data_summer
+        return merged_data_summer[: 28 * 24]
     elif season == "winter":
-        return merged_data_winter
+        return merged_data_winter[: 28 * 24]
     else:
         raise ValueError("Season must be either 'summer' or 'winter'.")
