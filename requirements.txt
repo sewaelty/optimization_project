@@ -1,4 +1,8 @@
-gurobipy
 pandas
 numpy
+gurobipy
+os
+sys
+itertools
 matplotlib
+seaborn
