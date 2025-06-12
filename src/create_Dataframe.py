@@ -28,6 +28,10 @@ def createDataframe(season):
     # change price from euro/mwh to euro/kwh and renaming the column
     p_winter["price_EUR_MWh"] = p_winter["price_EUR_MWh"] / 1000
     p_winter.rename(columns={"price_EUR_MWh": "Spotmarket_(EUR/kWh)"}, inplace=True)
+    # replace 0 values with 0.01
+    p_winter["Spotmarket_(EUR/kWh)"] = (
+        p_winter["Spotmarket_(EUR/kWh)"].copy().replace(0, 0.01)
+    )
 
     # Spotmarket data from: https://energy-charts.info/charts/price_spot_market/chart.htm?l=en&c=CH&interval=month&year=2024&legendItems=by4&month=12
 
