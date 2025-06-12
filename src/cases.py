@@ -461,7 +461,7 @@ def PV_no_feed_in_and_penalty(Time_interval,merged_data,model,power_dishwasher,b
 
 ### Case 3: EV, PV with Feed-in and Penalty implemented in the following function
 def EV_PV_penalty_feed_in_case_3(Time_interval,merged_data,model,power_dishwasher,binary_dishwasher,power_wm,
-                    binary_wm,power_dryer,binary_dryer,kwh_per_km,inflexible_demand,power_hp,max_power_hp):
+                    binary_wm,power_dryer,binary_dryer,kwh_per_km,inflexible_demand,max_power_hp,power_hp):
     
     """
     In this function EV charging and discharging with V2H and V2G, PV and Penalty are implemented.
@@ -656,4 +656,4 @@ def EV_PV_penalty_feed_in_case_3(Time_interval,merged_data,model,power_dishwashe
     model.update()
     
     #Return All Relevant Variables for objective function and plotting
-    return ev_feed_in_binary,ev_feed_in_power,ev_v2h_feed_in_binary,ev_v2h_power,pv_maxed_binary,unmet,pv_feed_in,total_load,penalty_cost, level_bin, levels, penalty_per_level, demand_level, unmet
+    return ev_feed_in_binary,ev_feed_in_power,ev_v2h_feed_in_binary,ev_v2h_power,pv_maxed_binary,unmet,pv_feed_in,penalty_cost, level_bin, levels, penalty_per_level, demand_level
