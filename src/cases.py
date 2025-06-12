@@ -1,12 +1,9 @@
-import pandas as pd
+
 import numpy as np
 import gurobipy as gp
 from gurobipy import GRB
-import os
-import sys
 import itertools
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 
 
 def dishwasher(Time_interval,merged_data,model):
@@ -378,3 +375,172 @@ def PV_no_feed_in_and_penalty(Time_interval,merged_data_summer_case_2,model,merg
     
     return pv, load, unmet, curtail, pv_maxed_binary, total_load,penalty_cost, level_bin, levels, penalty_per_level, demand_level
 
+
+
+### Case 3: EV, PV with Feed-in and Penalty implemented in the following function
+def EV_PV_penalty_feed_in_case_3(Time_interval,merged_data,model,power_dishwasher,binary_dishwasher,power_wm,
+                    binary_wm,power_dryer,binary_dryer,kwh_per_km,inflexible_demand,power_hp,max_power_hp):
+    # EV properties
+    min_power_ev = 1 #kW, minimum power to charge the EV
+    max_power_ev = 10 #kW, maximum power to charge the EV
+    max_capacity_ev = 70 #kWh
+
+    ###Variables
+    #state of charge of the EV at each time step
+    soc_ev = model.addVars(Time_interval,lb=0, ub=max_capacity_ev, vtype=GRB.CONTINUOUS, name="soc_ev")
+    #how much power is being charged at each time step
+    charging_ev = model.addVars(Time_interval,lb=0, ub=max_power_ev, vtype=GRB.CONTINUOUS, name="charging_lvl_ev")
+    #binary variable to indicate if the EV is being charged at each time step
+    binary_ev = model.addVars(Time_interval, vtype=GRB.BINARY, name="on_ev")
+
+    # Enforce SoC at 7:00 every day (hour 7 of each day)
+    for d in range(Time_interval // 24):
+        t = d * 24 + 7  # 7:00 each day
+        if t < Time_interval:
+            model.addConstr(soc_ev[t] >= 0.8*max_capacity_ev, name=f"ev_soc_7am_day_{d}")
+
+    # car can only charge if it is at home
+    model.addConstrs((binary_ev[t] <= merged_data['ev_at_home_binary'][t] for t in range(len(binary_ev))), name="allowed_ev_summer")
+
+    # if car is at home, it can charge, but not more than the maximum power
+    # and if it is charging, it must be charging at least the minimum power
+    model.addConstrs((charging_ev[t] <= max_power_ev * merged_data['ev_home_availability'][t] * binary_ev[t] for t in range(Time_interval)), name="max_power_ev")
+    model.addConstrs((charging_ev[t] >= min_power_ev * merged_data['ev_home_availability'][t] * binary_ev[t] for t in range(Time_interval)), name="min_power_ev")
+
+    # Constrain ev storage
+    initial_soc_ev = 20
+    model.addConstr(soc_ev[0] == initial_soc_ev, name="ev_soc_initial")
+
+    model.update()
+
+
+    # grid feed in tariff
+    merged_data['feed_in_tariff'] = merged_data['Spotmarket_(EUR/kWh)'] * 0.8
+    
+    #introduce cap and floor for feed in tariff
+    merged_data['feed_in_tariff'] = merged_data['feed_in_tariff'].clip(lower=0.0, upper=0.2)
+
+    min_disch_ev = min_power_ev #discharge and charge intervals are equal
+    max_disch_ev = max_power_ev
+    # Total power consumption
+    total_load = {
+        t: merged_data
+        ['Inflexible_Demand_(kWh)'][t]+
+        power_dishwasher * binary_dishwasher[t] +
+        power_wm * binary_wm[t] + 
+        power_dryer * binary_dryer[t] + charging_ev[t] + power_hp[t]
+        for t in range(Time_interval)
+    }
+
+    # Binary variable to indicate if the EV is feeding in power directly to the home, 1 if yes
+    ev_v2h_feed_in_binary = model.addVars(Time_interval, vtype=GRB.BINARY, name="ev_v2h_feed_in_binary")
+    # Binary variable to indicate if the EV is feeding in power into the grid, 1 if yes
+    ev_feed_in_binary = model.addVars(Time_interval, vtype=GRB.BINARY, name="ev_feed_in_binary")
+    # variable of power being fed into the grid by the EV
+    ev_feed_in_power = model.addVars(Time_interval, lb=0.0, name="ev_feed_in_power")
+    # variable of power being fed into the home by the EV
+    ev_v2h_power = model.addVars(Time_interval, lb=0.0, name="ev_v2h_power")  # Power fed into the grid by EV in V2H mode
+    # Binary variable to indicate if the PV production is maxed out, 1 if load >= pv
+    pv_maxed_binary = model.addVars(Time_interval, vtype=GRB.BINARY, name="pv_maxed")
+    # If demand is higher than PV production
+    unmet   = model.addVars(Time_interval, lb=0.0, name="unmet_load")
+    # If PV production is higher than demand, the excess is fed into the grid
+    pv_feed_in = model.addVars(Time_interval, lb=0.0, name="feed_in")
+
+
+
+    # constraint, ev cant be charging and feeding in power at the same time
+    model.addConstrs((ev_v2h_feed_in_binary[t] + binary_ev[t] <= 1 for t in range(Time_interval)), name="ev_v2h_feed_in_binary_constraint")
+
+    # constraint, ev cant be charging and feeding in power at the same time 
+    model.addConstrs((ev_feed_in_binary[t] + binary_ev[t] <= 1 for t in range(Time_interval)), name="ev_feed_in_binary_constraint")
+
+    # if car is at home, it can feed-in, but not more than the maximum power
+    # and if it is feeding-in, it must be discharging at least the minimum power
+    model.addConstrs((ev_v2h_power[t] <= max_disch_ev * merged_data
+    ['ev_home_availability'][t] * ev_v2h_feed_in_binary[t] for t in range(Time_interval)), name="max_power_ev_v2h_feed_in")
+    model.addConstrs((ev_v2h_power[t] >= min_disch_ev * merged_data
+    ['ev_home_availability'][t] * ev_v2h_feed_in_binary[t] for t in range(Time_interval)), name="min_power_ev_v2h_feed_in")
+    model.addConstrs((ev_feed_in_power[t] <= max_disch_ev * merged_data
+    ['ev_home_availability'][t] * ev_feed_in_binary[t] for t in range(Time_interval)), name="max_power_ev_feed_in")
+    model.addConstrs((ev_feed_in_power[t] >= min_disch_ev * merged_data
+    ['ev_home_availability'][t] * ev_feed_in_binary[t] for t in range(Time_interval)), name="min_power_ev_feed_in")
+
+    # added up, the feed in is not allowed to be higher than the power introduced by the EV
+    model.addConstrs((ev_feed_in_power[t] + ev_v2h_power[t] <= max_disch_ev * merged_data
+    ['ev_home_availability'][t] for t in range(Time_interval)), name="ev_feed_in_power_limit")
+
+    # constraint for state of charge of the EV
+    model.addConstrs((soc_ev[t] == soc_ev[t-1] + charging_ev[t-1] - ev_feed_in_power[t-1] - ev_v2h_power[t-1] - merged_data
+    ['distance_driven'][t-1] * kwh_per_km for t in range(1,Time_interval)),name="ev_soc_update")
+
+    # Choose M large enough to cover max difference between pv and load
+    M = 10000
+
+    # Constraints for PV production, feed in, and unmet demand
+    for t in range(Time_interval):
+        pv = merged_data['PV_energy_production_kWh'][t]
+        load = total_load[t]
+        
+        # Binary switch: if PV > load → binary = 0; else 1
+        model.addConstr(pv + ev_v2h_power[t] - load + unmet[t] - pv_feed_in[t] == 0, name=f"pv_load_balance_{t}")
+        model.addConstr(pv_feed_in[t] <= (1-pv_maxed_binary[t]) * M , name=f"feed_in_pv_{t}_2")
+        model.addConstr(unmet[t] <= pv_maxed_binary[t] * M, name=f"unmet_load_{t}_2")
+    
+
+    #Time_interval,merged_data,model,inflexible_demand, power_dishwasher,power_wm,power_dryer,max_power_ev,unmet:
+    ε = 1e-3
+    wanted_steps = 6
+    max_demand = max(inflexible_demand) + power_dishwasher + power_wm + power_dryer + max_power_ev + max_power_hp
+    levels = np.arange(0, max_demand/7*6 + ε, max_demand/((wanted_steps - 1)))
+    levels = np.append(levels, max_demand * 1.5 )  # Ensure coverage
+
+    #multiplier for penalty costs per level increasing by 0.1 per level
+    multiplier_per_level = [0.003 * i for i in range(len(levels)-1)]
+    M_price = max_demand + 10
+
+    # Binary indicators per level per timestep
+    level_bin = [
+        [model.addVar(vtype=GRB.BINARY, name=f"level_bin[{t},{i}]") for i in range(len(levels)-1)]
+        for t in range(Time_interval)
+    ]
+
+    # Integer index of active level
+    demand_level = [
+        model.addVar(lb=0, ub=len(levels) - 1, vtype=GRB.INTEGER, name=f"demand_level[{t}]")
+        for t in range(Time_interval)
+    ]
+
+    # Constraint: only one level active at a time
+    for t in range(Time_interval):
+        model.addConstr(gp.quicksum(level_bin[t]) == 1, name=f"one_level_active_{t}")
+
+    # Constraint: bind unmet_demand to its level using Big-M
+    for t in range(Time_interval):
+        for i in range(len(levels) - 1):
+            model.addConstr(
+                unmet[t] >= levels[i] - (1 - level_bin[t][i]) * M_price,
+                name=f"lower_bound_level_{t}_{i}"
+            )
+            model.addConstr(
+                unmet[t] <= levels[i + 1] - ε + (1 - level_bin[t][i]) * M_price,
+                name=f"upper_bound_level_{t}_{i}"
+            )
+        # Calculate demand_level from binary selection
+        model.addConstr(
+            demand_level[t] == gp.quicksum(i * level_bin[t][i] for i in range(len(levels)-1)),
+            name=f"demand_level_calc_{t}"
+        )
+
+    #generate penalty costs for each level that depend on a const and a linear term
+    penalty_per_level = [multiplier_per_level[i] * levels[i] for i in range(len(levels)-1)]
+
+    # Penalty term as an expression
+    penalty_cost = gp.quicksum(
+        penalty_per_level[i] * level_bin[t][i]
+        for t in range(Time_interval)
+        for i in range(len(levels)-1)
+    )
+
+    model.update()
+    return ev_feed_in_binary,ev_feed_in_power,ev_v2h_feed_in_binary,ev_v2h_power,pv_maxed_binary,unmet,pv_feed_in,total_load,penalty_cost, level_bin, levels, penalty_per_level, demand_level, unmet
