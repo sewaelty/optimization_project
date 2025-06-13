@@ -758,6 +758,24 @@ def EV_PV_penalty_feed_in_case_3(
         for t in range(Time_interval)
     }
 
+    # Calculate demand levels for penalty tiering
+    base_max_demand = (
+        max(inflexible_demand)
+        + power_dishwasher
+        + power_wm
+        + power_dryer
+        + max_power_ev
+    )
+
+    max_demand = (
+        max(inflexible_demand)
+        + power_dishwasher
+        + power_wm
+        + power_dryer
+        + max_power_ev
+        + max_power_hp
+    )
+
     ### === V2G / V2H Setup === ###
 
     # Variable: Binary, 1 if EV is discharging to house (V2H)
@@ -786,14 +804,6 @@ def EV_PV_penalty_feed_in_case_3(
         name="ev_feed_in_binary_constraint",
     )
 
-    # Constraint: V2H power must not exceed unmet demand
-    model.addConstr(
-        (
-            ev_v2h_feed_in_binary[t] * ev_v2h_power[t] <= unmet[t]
-            for t in range(Time_interval)
-        ),
-        name="ev_v2h_power_constraint",
-    )
     # Constraint: Limit V2H power using binary and availability
     model.addConstrs(
         (
@@ -869,6 +879,15 @@ def EV_PV_penalty_feed_in_case_3(
     # Variable: Unmet demand due to PV/EV shortfall in kWh
     unmet = model.addVars(Time_interval, lb=0.0, name="unmet_load")
 
+    # Constraint: V2H power must not exceed unmet demand - beware: this constraint belongs to the V2H logic -> see mathematical formulation
+    model.addConstrs(
+        (
+            ev_v2h_feed_in_binary[t] * ev_v2h_power[t] <= unmet[t]
+            for t in range(Time_interval)
+        ),
+        name="ev_v2h_power_constraint",
+    )
+
     # Variable: PV energy fed into the grid in kWh
     pv_feed_in = model.addVars(Time_interval, lb=0.0, name="feed_in")
 
@@ -900,24 +919,6 @@ def EV_PV_penalty_feed_in_case_3(
 
     ε = 1e-3  # Small epsilon to avoid overlapping level ranges
     wanted_steps = 6  # Number of discrete penalty tiers you want to model
-
-    # Calculate demand levels for penalty tiering
-    base_max_demand = (
-        max(inflexible_demand)
-        + power_dishwasher
-        + power_wm
-        + power_dryer
-        + max_power_ev
-    )
-
-    max_demand = (
-        max(inflexible_demand)
-        + power_dishwasher
-        + power_wm
-        + power_dryer
-        + max_power_ev
-        + max_power_hp
-    )
 
     levels = np.arange(
         0, base_max_demand / 7 * 6 + ε, base_max_demand / ((wanted_steps - 1))
