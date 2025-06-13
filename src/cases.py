@@ -4,7 +4,7 @@ from gurobipy import GRB
 import itertools
 
 
-def dishwasher(Time_interval, merged_data, model):
+def dishwasher(Time_interval, model):
     """
     In the following function the dishwasher is implemented.
     This function is called in all cases
@@ -322,7 +322,7 @@ def peak_prices(
     max_power_ev,
     power_dryer,
     max_power_hp,
-    power_hp,
+    power_hp
 ):
     """
     In the following function the peak price penalty is implemented.
@@ -494,8 +494,7 @@ def PV_no_feed_in_and_penalty(
     charging_ev,
     inflexible_demand,
     max_power_ev,
-    max_power_hp,
-    power_hp,
+    power_hp
 ):
     """
     Implements PV generation without feed-in to the grid and penalizes high peak demand.
@@ -663,7 +662,7 @@ def EV_PV_penalty_feed_in_case_3(
     kwh_per_km,
     inflexible_demand,
     max_power_hp,
-    power_hp,
+    power_hp
 ):
     """
     In this function EV charging and discharging with V2H and V2G, PV and Penalty are implemented.
@@ -991,5 +990,5 @@ def EV_PV_penalty_feed_in_case_3(
         total_load,
         charging_ev,
         soc_ev,
-        binary_ev,
+        binary_ev
     )
