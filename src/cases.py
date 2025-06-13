@@ -333,6 +333,14 @@ def peak_prices(
     wanted_steps = 6  # Number of demand levels before final catch-all level
 
     # Estimate maximum possible demand based on device power ratings
+    base_max_demand = (
+        max(inflexible_demand)
+        + power_dishwasher
+        + power_wm
+        + power_dryer
+        + max_power_ev
+    )
+
     max_demand = (
         max(inflexible_demand)
         + power_dishwasher
@@ -343,7 +351,9 @@ def peak_prices(
     )
 
     # Create demand levels (bins) and ensure full demand range is covered
-    levels = np.arange(0, max_demand / 7 * 6 + ε, max_demand / ((wanted_steps - 1)))
+    levels = np.arange(
+        0, base_max_demand / 7 * 6 + ε, base_max_demand / ((wanted_steps - 1))
+    )
     levels = np.append(levels, max_demand * 1.5 + 5)  # Ensure coverage
 
     # Define a price multiplier for each level (linearly increasing)
@@ -537,6 +547,14 @@ def PV_no_feed_in_and_penalty(
     ε = 1e-3  # Define a small buffer to ensure strict inequality handling in level boundaries
     wanted_steps = 6  # Number of discrete penalty tiers you want to model
 
+    base_max_demand = (
+        max(inflexible_demand)
+        + power_dishwasher
+        + power_wm
+        + power_dryer
+        + max_power_ev
+    )
+
     # Estimate the maximum possible electric demand across all components
     max_demand = (
         max(inflexible_demand)
@@ -547,7 +565,9 @@ def PV_no_feed_in_and_penalty(
     )
 
     # Generate level thresholds (step boundaries)
-    levels = np.arange(0, max_demand / 7 * 6 + ε, max_demand / ((wanted_steps - 1)))
+    levels = np.arange(
+        0, base_max_demand / 7 * 6 + ε, base_max_demand / ((wanted_steps - 1))
+    )
 
     # Add a catch-all top level to allow for demand spikes beyond normal range
     levels = np.append(levels, max_demand * 1.5 + 5)
@@ -873,6 +893,14 @@ def EV_PV_penalty_feed_in_case_3(
     wanted_steps = 6  # Number of discrete penalty tiers you want to model
 
     # Calculate demand levels for penalty tiering
+    base_max_demand = (
+        max(inflexible_demand)
+        + power_dishwasher
+        + power_wm
+        + power_dryer
+        + max_power_ev
+    )
+
     max_demand = (
         max(inflexible_demand)
         + power_dishwasher
@@ -881,7 +909,10 @@ def EV_PV_penalty_feed_in_case_3(
         + max_power_ev
         + max_power_hp
     )
-    levels = np.arange(0, max_demand / 7 * 6 + ε, max_demand / ((wanted_steps - 1)))
+
+    levels = np.arange(
+        0, base_max_demand / 7 * 6 + ε, base_max_demand / ((wanted_steps - 1))
+    )
     levels = np.append(levels, max_demand * 1.5)
 
     # Multiplier: linear penalty per level
