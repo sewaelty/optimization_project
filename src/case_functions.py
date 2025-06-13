@@ -513,11 +513,29 @@ def PV_no_feed_in_and_penalty(
         for t in range(Time_interval)
     }
 
+    # Estimate the maximum possible electric demand across all components except Heatpump
+    base_max_demand = (
+        max(inflexible_demand)
+        + power_dishwasher
+        + power_wm
+        + power_dryer
+        + max_power_ev
+    )
+
+    # Estimate the maximum possible electric demand across all components
+    max_demand = (
+        max(inflexible_demand)
+        + power_dishwasher
+        + power_wm
+        + power_dryer
+        + max_power_ev
+    )
+
     # Variable: Binary variable: 1 if PV is fully used (demand >= PV), 0 if there is surplus PV
     pv_maxed_binary = model.addVars(Time_interval, vtype=GRB.BINARY, name="pv_maxed")
 
     # Big-M constant for disjunctive constraints
-    M = max(max(merged_data["PV_energy_production_kWh"]), max(total_load.values())) + 10
+    M = max(merged_data["PV_energy_production_kWh"]) + max_demand
 
     # Variables for imbalance: unmet demand > 0 when load > PV and curtailed PV > 0 when PV > load
     unmet = model.addVars(Time_interval, lb=0.0, name="unmet_load")
@@ -545,23 +563,6 @@ def PV_no_feed_in_and_penalty(
 
     ε = 1e-3  # Define a small buffer to ensure strict inequality handling in level boundaries
     wanted_steps = 6  # Number of discrete penalty tiers you want to model
-
-    base_max_demand = (
-        max(inflexible_demand)
-        + power_dishwasher
-        + power_wm
-        + power_dryer
-        + max_power_ev
-    )
-
-    # Estimate the maximum possible electric demand across all components
-    max_demand = (
-        max(inflexible_demand)
-        + power_dishwasher
-        + power_wm
-        + power_dryer
-        + max_power_ev
-    )
 
     # Generate level thresholds (step boundaries)
     levels = np.arange(
@@ -785,6 +786,14 @@ def EV_PV_penalty_feed_in_case_3(
         name="ev_feed_in_binary_constraint",
     )
 
+    # Constraint: V2H power must not exceed unmet demand
+    model.addConstr(
+        (
+            ev_v2h_feed_in_binary[t] * ev_v2h_power[t] <= unmet[t]
+            for t in range(Time_interval)
+        ),
+        name="ev_v2h_power_constraint",
+    )
     # Constraint: Limit V2H power using binary and availability
     model.addConstrs(
         (
@@ -864,13 +873,15 @@ def EV_PV_penalty_feed_in_case_3(
     pv_feed_in = model.addVars(Time_interval, lb=0.0, name="feed_in")
 
     # Constant: Large number for big-M method
-    M = max(max(merged_data["PV_energy_production_kWh"]), max(total_load.values())) + 10
+    M = max(merged_data["PV_energy_production_kWh"]) + max_demand
 
     # Constraint: PV + V2H must cover load + feed-in + unmet
     for t in range(Time_interval):
         pv = merged_data["PV_energy_production_kWh"][t]
         load = total_load[t]
 
+        # Constraint: pv_feed in can't be bigger than PV production
+        model.addConstr(pv_feed_in[t] <= pv)
         # Constraint: Energy balance at each timestep
         model.addConstr(
             pv + ev_v2h_power[t] - load + unmet[t] - pv_feed_in[t] == 0,
