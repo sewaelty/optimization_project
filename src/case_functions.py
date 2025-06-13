@@ -322,7 +322,7 @@ def peak_prices(
     max_power_ev,
     power_dryer,
     max_power_hp,
-    power_hp
+    power_hp,
 ):
     """
     In the following function the peak price penalty is implemented.
@@ -354,7 +354,7 @@ def peak_prices(
     levels = np.arange(
         0, base_max_demand / 7 * 6 + ε, base_max_demand / ((wanted_steps - 1))
     )
-    levels = np.append(levels, max_demand * 1.5 + 5)  # Ensure coverage
+    levels = np.append(levels, max_demand + ε)  # Ensure coverage
 
     # Define a price multiplier for each level (linearly increasing)
     multiplier_per_level = [0.003 * i for i in range(len(levels) - 1)]
@@ -494,7 +494,7 @@ def PV_no_feed_in_and_penalty(
     charging_ev,
     inflexible_demand,
     max_power_ev,
-    power_hp
+    power_hp,
 ):
     """
     Implements PV generation without feed-in to the grid and penalizes high peak demand.
@@ -517,7 +517,7 @@ def PV_no_feed_in_and_penalty(
     pv_maxed_binary = model.addVars(Time_interval, vtype=GRB.BINARY, name="pv_maxed")
 
     # Big-M constant for disjunctive constraints
-    M = 10000
+    M = max(max(merged_data["PV_energy_production_kWh"]), max(total_load.values())) + 10
 
     # Variables for imbalance: unmet demand > 0 when load > PV and curtailed PV > 0 when PV > load
     unmet = model.addVars(Time_interval, lb=0.0, name="unmet_load")
@@ -569,7 +569,7 @@ def PV_no_feed_in_and_penalty(
     )
 
     # Add a catch-all top level to allow for demand spikes beyond normal range
-    levels = np.append(levels, max_demand * 1.5 + 5)
+    levels = np.append(levels, max_demand + ε)
 
     # Define penalty multiplier per level (linear increase)
     multiplier_per_level = [0.003 * i for i in range(len(levels) - 1)]
@@ -662,7 +662,7 @@ def EV_PV_penalty_feed_in_case_3(
     kwh_per_km,
     inflexible_demand,
     max_power_hp,
-    power_hp
+    power_hp,
 ):
     """
     In this function EV charging and discharging with V2H and V2G, PV and Penalty are implemented.
@@ -832,8 +832,7 @@ def EV_PV_penalty_feed_in_case_3(
     # Constraint: Total discharge cannot exceed EV max power
     model.addConstrs(
         (
-            ev_feed_in_power[t] + ev_v2h_power[t]
-            <= max_disch_ev * merged_data["ev_home_availability"][t]
+            ev_feed_in_power[t] + ev_v2h_power[t] <= max_disch_ev
             for t in range(Time_interval)
         ),
         name="ev_feed_in_power_limit",
@@ -865,7 +864,7 @@ def EV_PV_penalty_feed_in_case_3(
     pv_feed_in = model.addVars(Time_interval, lb=0.0, name="feed_in")
 
     # Constant: Large number for big-M method
-    M = 10000
+    M = max(max(merged_data["PV_energy_production_kWh"]), max(total_load.values())) + 10
 
     # Constraint: PV + V2H must cover load + feed-in + unmet
     for t in range(Time_interval):
@@ -912,7 +911,7 @@ def EV_PV_penalty_feed_in_case_3(
     levels = np.arange(
         0, base_max_demand / 7 * 6 + ε, base_max_demand / ((wanted_steps - 1))
     )
-    levels = np.append(levels, max_demand * 1.5)
+    levels = np.append(levels, max_demand + ε)
 
     # Multiplier: linear penalty per level
     multiplier_per_level = [0.003 * i for i in range(len(levels) - 1)]
@@ -990,5 +989,5 @@ def EV_PV_penalty_feed_in_case_3(
         total_load,
         charging_ev,
         soc_ev,
-        binary_ev
+        binary_ev,
     )
