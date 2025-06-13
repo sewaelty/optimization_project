@@ -890,7 +890,6 @@ def EV_PV_penalty_feed_in_case_3(
 
     # Variable: PV energy fed into the grid in kWh
     pv_feed_in = model.addVars(Time_interval, lb=0.0, name="feed_in")
-    pv2H = model.addVars(Time_interval, lb=0.0, name="pv2H")
 
     # Constant: Large number for big-M method
     M = max(merged_data["PV_energy_production_kWh"]) + max_demand
@@ -900,8 +899,6 @@ def EV_PV_penalty_feed_in_case_3(
         pv = merged_data["PV_energy_production_kWh"][t]
         load = total_load[t]
 
-        # Constraint:PV2H must equal PV minus feed-in
-        model.addConstr(pv2H[t] == pv - pv_feed_in[t])
         # Constraint: pv_feed in can't be bigger than PV production
         model.addConstr(pv_feed_in[t] <= pv)
         # Constraint: Energy balance at each timestep
@@ -1005,5 +1002,4 @@ def EV_PV_penalty_feed_in_case_3(
         charging_ev,
         soc_ev,
         binary_ev,
-        pv2H,
     )
