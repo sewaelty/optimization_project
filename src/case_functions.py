@@ -430,7 +430,7 @@ def heat_pump(Time_interval, merged_data, model, max_power_hp):
 
     # Parameters for the heat pump and thermal storage
     COP = 4.2  # Coefficient of Performance: how much thermal energy per kWh electricity
-    storage_capacity = 200  # kWh: total capacity of the thermal storage
+    storage_capacity = 25  # kWh: total capacity of the thermal storage
     storage_loss_rate = 0.01  # 1% hourly loss of stored heat
 
     # Variable: Power input to the heat pump (in kW), bounded by the max rated power
@@ -456,9 +456,16 @@ def heat_pump(Time_interval, merged_data, model, max_power_hp):
         name="heat_storage",
     )
 
+    # Variable: Binary variable: 1 if heat pump is on, 0 otherwise
+    hp_binary = model.addVars(Time_interval, vtype=GRB.BINARY, name="hp_on")
+
     # Constraint: Link power input to heat output using COP
     for t in range(Time_interval):
         model.addConstr(heat_output[t] == COP * power_hp[t], name=f"heat_output_{t}")
+        model.addConstr(power_hp[t] >= 2 * hp_binary[t], name=f"min_power_hp_{t}")
+        model.addConstr(
+            power_hp[t] <= max_power_hp * hp_binary[t], name=f"max_power_hp_{t}"
+        )
 
     # Constraint: Storage balance with losses and heat consumption
     for t in range(Time_interval):
