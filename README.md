@@ -6,13 +6,12 @@ This project uses **Gurobi** and **Python** to solve an optimization problem rel
 
 ## Project Structure
 
-- **`data/`**: Contains all datasets used in the project. The subfolder `_discarded data/` contains outdated or intermediate versions of datasets.
+- **`data/`**: Contains all datasets used in the project. The subfolder `discarded data/` contains outdated or intermediate versions of datasets.
 - **`EV-data/`**: Contains a notebook that analyzes simulation results from _emobpy_ and selects an electric vehicle profile.
-- **`main/`**: Contains the main notebook which runs the optimization for all cases described in the _Results_ section. The individual cases are called through functions defined in the **case_functions.py** file in the folder `src`. The plots_notebook plots the results used in the report and saves them to /figures.
+- **`main/`**: Contains the main notebook which runs the optimization for all cases described in the _Results_ section. The individual cases are called through functions defined in the **case_functions.py** file in the folder `src`. The plots notebook plots the results used in the report and saves them to `figures/`.
 - **`results/`**: Contains the csv files with the results.
 - **`figures/`**: Contains the figures used in the report.
 - **`src/`**: Includes Python file **case_functions.py** which defines the functions used in the optimization. Also includes files with helper functions and modularized logic. .
-- **`additional notebooks/`**: Contains supplementary notebooks used for data preparation and exploratory analysis.
 - **`requirements.txt`**: Lists all Python packages required to run the code.
 
 ---
