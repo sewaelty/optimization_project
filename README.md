@@ -55,5 +55,5 @@ Case 1 Winter:      2255s
 Case 2 Summer:        28s
 Case 2 Winter:      2083s
 Case 3 Summer:       231s
-Case 3 Winter:
+Case 3 Winter:     38437s
 ```
