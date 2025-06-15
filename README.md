@@ -4,20 +4,20 @@ This project uses **Gurobi** and **Python** to solve an optimization problem rel
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 - **`data/`**: Contains all datasets used in the project. The subfolder `_discarded data/` contains outdated or intermediate versions of datasets.
 - **`EV-data/`**: Contains a notebook that analyzes simulation results from _emobpy_ and selects an electric vehicle profile.
-- **`main/`**: Contains the main notebook which runs the optimization for all cases described in the _Results_ section. The individual cases are called through functions defined in the **case_functions.py** file in the folder `src`.
+- **`main/`**: Contains the main notebook which runs the optimization for all cases described in the _Results_ section. The individual cases are called through functions defined in the **case_functions.py** file in the folder `src`. The plots_notebook plots the results used in the report and saves them to /figures.
 - **`results/`**: Contains the csv files with the results.
-- **`figures/`**:  Contains the figures used in the report.
+- **`figures/`**: Contains the figures used in the report.
 - **`src/`**: Includes Python file **case_functions.py** which defines the functions used in the optimization. Also includes files with helper functions and modularized logic. .
 - **`additional notebooks/`**: Contains supplementary notebooks used for data preparation and exploratory analysis.
 - **`requirements.txt`**: Lists all Python packages required to run the code.
 
 ---
 
-## 🚀 Setup Instructions
+## Setup Instructions
 
 To get started, set up a virtual environment (optional but recommended) and install dependencies:
 
@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📊 Results
+## Results
 
 The project is divided into **four cases**, each evaluated for both **summer (August)** and **winter (December)** scenarios:
 
@@ -42,9 +42,19 @@ The project is divided into **four cases**, each evaluated for both **summer (Au
 
 ---
 
-## 👥 Contributors
+## Contributors
 
 - Alessio Häseli
 - Severin Wälty
 - Simon Bernet
+
+## Estimated Runtimes
+
+Base Case Summer:     49s
+Base Case Winter:    403s
+Case 1 Winter:      2255s
+Case 2 Summer:        28s
+Case 2 Winter:      2083s
+Case 3 Summer:       231s
+Case 3 Winter:
 ```

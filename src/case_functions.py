@@ -462,6 +462,7 @@ def heat_pump(Time_interval, merged_data, model, max_power_hp):
     # Constraint: Link power input to heat output using COP
     for t in range(Time_interval):
         model.addConstr(heat_output[t] == COP * power_hp[t], name=f"heat_output_{t}")
+
         model.addConstr(power_hp[t] >= 2 * hp_binary[t], name=f"min_power_hp_{t}")
         model.addConstr(
             power_hp[t] <= max_power_hp * hp_binary[t], name=f"max_power_hp_{t}"
